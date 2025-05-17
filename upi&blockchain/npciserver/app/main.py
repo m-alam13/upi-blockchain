@@ -8,11 +8,17 @@ from fastapi.responses import RedirectResponse, JSONResponse
 # from app.controllers import user_controller
 from app.core.db import Base, engine
 from app.routes import auth_route, wallet_route, bank_route, transection_route
-
+from fastapi.middleware.cors import CORSMiddleware
 
 
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5000", 'http://localhost:8000'],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 @app.on_event("startup")
 def on_startup():
     Base.metadata.create_all(bind=engine)
@@ -35,6 +41,8 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
         content={"detail": exc.detail}
     )
 
+
+
 # Include routes
 app.include_router(auth_route.router)
 app.include_router(wallet_route.router)
@@ -46,4 +54,4 @@ app.state.templates = templates
 # Root route to show the index page
 @app.get("/")
 async def read_index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse("login.html", {"request": request})

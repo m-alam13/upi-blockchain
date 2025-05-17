@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Create Wallet</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f7f9fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            width: 350px;
+        }
+        h2 {
+            margin-bottom: 1.5rem;
+            color: #333;
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 0.6rem;
+            margin-bottom: 1.2rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        input[readonly] {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
+        button {
+            width: 100%;
+            background-color: #3498db;
+            color: white;
+            padding: 0.8rem;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .error {
+            color: #e74c3c;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        .success {
+            color: #2ecc71;
+            margin-bottom: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Create Wallet</h2>
+        <div id="message" class="error"></div>
+        <div id="success" class="success"></div>
+        <form id="walletForm">
+            <label for="upiId">UPI ID</label>
+            <input type="text" id="upiId" name="upiId" value={{upi}} readonly />
+
+            <label for="pin">UPI PIN</label>
+            <input type="password" id="pin" name="pin" placeholder="Enter UPI PIN" required minlength="4" maxlength="6" />
+
+            <label for="rePin">Re-enter UPI PIN</label>
+            <input type="password" id="rePin" name="rePin" placeholder="Re-enter UPI PIN" required minlength="4" maxlength="6" />
+
+            <button type="submit">Create Wallet</button>
+        </form>
+        <div class="footer">
+            <a href="/wallet">Cancel</a>
+        </div>
+    </div>
+    
+
+<script>
+    document.getElementById('walletForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const upiId = document.getElementById('upiId').value.trim();
+        const pin = document.getElementById('pin').value;
+        const rePin = document.getElementById('rePin').value;
+
+        const messageEl = document.getElementById('message');
+        const successEl = document.getElementById('success');
+        messageEl.style.display = 'none';
+        successEl.style.display = 'none';
+
+        if (pin.length < 4 || pin.length > 6) {
+            messageEl.textContent = "UPI PIN must be between 4 and 6 digits.";
+            messageEl.style.display = 'block';
+            return;
+        }
+        if (pin !== rePin) {
+            messageEl.textContent = "UPI PINs do not match.";
+            messageEl.style.display = 'block';
+            return;
+        }
+
+        const payload = {
+            vpa: upiId,
+            pin: pin
+        };
+
+        try {
+            const response = await fetch('/create-wallet', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                messageEl.textContent = errorData.detail || "Failed to create wallet.";
+                messageEl.style.display = 'block';
+                return;
+            }
+
+            successEl.textContent = "Wallet created successfully!";
+            successEl.style.display = 'block';
+            document.getElementById('walletForm').reset();
+            window.location.href = '/wallet'
+
+        } catch (error) {
+            messageEl.textContent = "Network error or server unavailable.";
+            messageEl.style.display = 'block';
+            console.error(error);
+        }
+    });
+</script>
+</body>
+</html>

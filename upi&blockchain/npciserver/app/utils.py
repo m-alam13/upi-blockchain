@@ -1,6 +1,7 @@
 import re
 
 from datetime import datetime
+import uuid
 
 def generate_vpa(name: str, bank_name: str) -> str:
     """Generate a Virtual Payment Address (VPA) from user name and bank name"""

@@ -33,6 +33,26 @@ async def getlogin(request: Request):
     return templates.TemplateResponse("login.html", {"request": request, "message": "Hello from FastAPI!"})
 # You can add more user-related routes here...
 
+@router.get("/verify-callback")
+async def verification_callback(
+    verification_token: str,
+    status: str, # Additional data from Server 2
+    db: Session = Depends(get_db)
+):
+    return auth.insert_uupi(
+        db=db,
+        verification_token=verification_token,
+        status=status,
 
+    )
+    
+    # 1. Update verification status
+
+    
+    # 2. Redirect to result page
+    # return RedirectResponse(
+    #     url=f"/signup-result?status={status}&verification_id={verification_id}",
+    #     status_code=303
+    # )
 
 

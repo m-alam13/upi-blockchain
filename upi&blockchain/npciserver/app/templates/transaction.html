@@ -273,7 +273,7 @@
             
             <div class="form-group">
                 <label for="upiPin">UPI PIN</label>
-                <input type="password" id="upiPin" class="form-control" placeholder="Enter 6-digit UPI PIN" maxlength="6" pattern="[0-9]{6}" required>
+                <input type="password" id="upiPin" class="form-control" placeholder="Enter 6-digit UPI PIN" maxlength="6"  required>
                 <div class="error-message" id="upiPinError"></div>
             </div>
             
@@ -364,13 +364,31 @@
             paymentMethods.forEach(method => {
                 const methodElement = document.createElement('div');
                 methodElement.className = `payment-method ${selectedMethod?.id === method.id ? 'selected' : ''}`;
-                methodElement.innerHTML = `
-                    <div class="payment-method-icon">${method.type === 'wallet' ? '💰' : '🏦'}</div>
-                    <div class="payment-method-details">
-                        <div class="payment-method-name">${method.bank_name } | ${method.account_number}</div>
-                        <div class="payment-method-info">${method.vpa}</div>
-                    </div>
-                `;
+                // methodElement.innerHTML = `
+                //     <div class="payment-method-icon">${method.type === 'wallet' ? '💰' : '🏦'}</div>
+                //     <div class="payment-method-details">
+                        
+                //         <div class="payment-method-name">${method.bank_name } | ${method.account_number}</div>
+                //         <div class="payment-method-info">${method.vpa}</div>
+                //     </div>
+                // `;
+                if (method.type === 'wallet') {
+                    methodElement.innerHTML = `
+                        <div class="payment-method-icon">💰</div>
+                        <div class="payment-method-details">
+                            <div class="payment-method-name">Wallet</div>
+                            <div class="payment-method-info">${method.vpa}</div>
+                        </div>
+                    `;
+                } else if (method.type === 'bank') {
+                    methodElement.innerHTML = `
+                        <div class="payment-method-icon">🏦</div>
+                        <div class="payment-method-details">
+                            <div class="payment-method-name">${method.bank_name} | ${method.account_number}</div>
+                            <div class="payment-method-info">${method.vpa}</div>
+                        </div>
+                    `;
+                }
                 
                 methodElement.addEventListener('click', () => {
                     selectedMethod = method;
@@ -472,7 +490,7 @@
                     isValid = false;
                 }
                 
-                if (!upiPin || upiPin.length !== 6 || !/^\d+$/.test(upiPin)) {
+                if (!upiPin ||upiPin.length <4 ||upiPin.length > 6 || !/^\d+$/.test(upiPin)) {
                     upiPinError.textContent = 'Please enter a valid 6-digit UPI PIN';
                     upiPinError.style.display = 'block';
                     isValid = false;

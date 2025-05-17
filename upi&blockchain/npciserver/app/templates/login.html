@@ -133,7 +133,7 @@
             <p>Enter your credentials to access your account</p>
         </div>
         
-        <form id="loginForm" method="post", >
+        <form id="loginForm" method="post" >
             <div class="form-group">
                 <label for="email">Email Address</label>
                 <input type="email" id="email" class="form-control" placeholder="Enter your email" required>
@@ -187,6 +187,7 @@
             fetch('/login', {
                 method: 'POST',
                 credentials: "include",
+                 mode: 'cors',
                 headers: {
                     'Content-Type': 'application/json',
                     
@@ -198,13 +199,19 @@
             })
             .then(response =>{
                 
-                data = response.json()
-                 console.log(data);
+                const data = response.json()
+                // console.log(data,response);
+                // if (response.redirected) {
+                //     // ✅ If FastAPI sends a RedirectResponse (302), handle it
+                //     window.location.href = response.url;
+                // } 
+                console.log("response",response);
                 if (response.redirected) {
-                    // ✅ If FastAPI sends a RedirectResponse (302), handle it
-                    window.location.href = response.url;
-                } 
-             if (response.status==200) {
+                    window.location.href = response.url; 
+                    return // ✅ this causes a full browser navigation
+                }
+                            
+                else if (response.status==200) {
                     // On successful login, redirect to the wallet page
                     localStorage.setItem('userEmail', email); // Simulate session
                     alert('Login successful! Redirecting to wallet page...');

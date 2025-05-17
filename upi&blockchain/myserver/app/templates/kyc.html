@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verification Form</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background-color: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: 500;
+    }
+
+    input[type="text"], input[type="hidden"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+
+    video, canvas {
+      width: 100%;
+      border-radius: 8px;
+      margin-top: 12px;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      background-color: #007BFF;
+      color: white;
+      padding: 12px;
+      margin-top: 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .note {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>User Verification</h2>
+    <form id="verifyForm" action="/verify" method="post" enctype="multipart/form-data">
+      <input type="hidden" name="token" value="{{ token }}">
+      <input type="hidden" name="callback_url" value="{{ callback_url }}">
+
+      <label>PAN:</label>
+      <input type="text" name="pan" required>
+
+      <label>Name:</label>
+      <input type="text" name="name" required>
+
+      <label>Mobile:</label>
+      <input type="text" name="mobile" required>
+
+      <label>Take a Selfie:</label>
+      <video id="video" autoplay></video>
+      <canvas id="canvas" style="display:none;"></canvas>
+
+      <button type="button" id="captureBtn" onclick="takeSelfie()">📸 Capture Selfie</button>
+      <button type="button" id="retakeBtn" onclick="retakeSelfie()" style="display:none;">🔁 Retake Selfie</button>
+      <div class="note">Make sure your face is clearly visible.</div>
+
+      <input type="hidden" name="selfie" id="selfieInput">
+
+      <button type="submit">✅ Submit Verification</button>
+    </form>
+  </div>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const selfieInput = document.getElementById('selfieInput');
+    const captureBtn = document.getElementById('captureBtn');
+    const retakeBtn = document.getElementById('retakeBtn');
+    let stream;
+
+    async function startCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        video.play();
+      } catch (err) {
+        alert("Could not access the webcam. Please allow camera permissions.");
+      }
+    }
+
+    function stopCamera() {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    }
+
+    function takeSelfie() {
+      const context = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataURL = canvas.toDataURL('image/png');
+      selfieInput.value = dataURL;
+
+      video.style.display = 'none';
+      canvas.style.display = 'block';
+      stopCamera();
+
+      captureBtn.style.display = 'none';
+      retakeBtn.style.display = 'block';
+
+      alert("✅ Selfie captured successfully!");
+    }
+
+    function retakeSelfie() {
+      canvas.style.display = 'none';
+      video.style.display = 'block';
+      captureBtn.style.display = 'block';
+      retakeBtn.style.display = 'none';
+      startCamera();
+    }
+
+    window.onload = startCamera;
+  </script>
+</body>
+</html>

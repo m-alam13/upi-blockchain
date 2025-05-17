@@ -11,11 +11,15 @@ from app.schemas.bank import (
     BankAccountUpdate,
     BankBalanceCheck
 )
-from app.models.user_model import BankDetails , User, Wallet, Transaction
+from app.middleware.jwt import create_access_token, verify_access_token
+from app.models.user_model import  User, BankDetails , User, Wallet, Transaction
 from app.utils import generate_vpa, generate_timestamped_transaction_id
 from uuid import uuid4
 from app.schemas.transection import TransactionRequest
 import re
+import requests
+from app.core.config import settings
+from urllib.parse import urlencode
 
 router = APIRouter()
 
@@ -125,7 +129,8 @@ async def process_transaction(
     db: Session = Depends(get_db),
     token_data: dict = Depends(verify_access_token_from_cookie)
 ):
-    sender: User = db.query(User).filter(User.id == token_data["user_id"]).first()
+    sender = db.query(User).filter(User.id == token_data["user_id"]).first()
+    print('mmm',sender)
     if not sender:
         raise HTTPException(status_code=401, detail="User not found")
 
@@ -134,7 +139,8 @@ async def process_transaction(
         raise HTTPException(status_code=400, detail="Amount must be positive")
 
     # Validate recipient
-    receiver: User = db.query(User).filter(User.uupi == payload.payeeUpi).first()
+    uupi = payload.payeeUpi.split('@')[0]
+    receiver: User = db.query(User).filter(User.uupi == uupi).first()
     if not receiver:
         raise HTTPException(status_code=404, detail="Payee UPI not found")
 
@@ -150,7 +156,8 @@ async def process_transaction(
             raise HTTPException(status_code=400, detail="Insufficient wallet balance")
         wallet.balance -= payload.amount
 
-        payer_account = wallet.vpa
+        payer_accoun = f"wallet-{wallet.vpa}"
+        payer_vpa = wallet.vpa
         payer_ifsc = "WALLET"
     elif payload.paymentMethod == "bank":
         bank = db.query(BankDetails).filter(
@@ -162,7 +169,7 @@ async def process_transaction(
         if bank.balance < payload.amount:
             raise HTTPException(status_code=400, detail="Insufficient bank balance")
         bank.balance -= payload.amount
-
+        payer_vpa = bank.vpa
         payer_account = bank.account_number
         payer_ifsc = bank.ifsc_code
     else:
@@ -172,30 +179,60 @@ async def process_transaction(
     receiver_wallet = receiver.wallet
     if receiver_wallet:
         receiver_wallet.balance += payload.amount
-        payee_account = receiver_wallet.vpa
+        payee_account = f"wallet-{receiver_wallet.vpa}"
         payee_ifsc = "WALLET"
+        payee_vpa = receiver_wallet.vpa
+        
     elif receiver.bank_details:
         receiver.bank_details.balance += payload.amount
         payee_account = receiver.bank_details.account_number
         payee_ifsc = receiver.bank_details.ifsc_code
+        payee_vpa  = receiver.bank_details.vpa
     else:
         raise HTTPException(status_code=500, detail="Payee has no active receiving account")
 
     # Log transaction
+    transaction_id= generate_timestamped_transaction_id()
+    block_chaindata ={
+        'transaction_id' : transaction_id,
+        'payer_uupi' : sender.uupi,
+        'payee_uupi' : receiver.uupi,
+        'payer_vpa' : payer_account,
+        'payee_vpa' : payee_account,
+        'amount' : payload.amount,
+        'payer_account' : payer_account,
+        'payer_ifsc': payer_ifsc,
+        'payee_account' : payee_account,
+        'payee_ifsc' : payee_ifsc,
+    }
+    print(block_chaindata)
+    if payer_vpa == payee_vpa:
+        raise HTTPException(status_code=400, detail="Invalid bank PIN")
     txn = Transaction(
-        transaction_id= generate_timestamped_transaction_id(),
+        transaction_id= transaction_id,
         payer_uupi=sender.uupi,
         payee_uupi=receiver.uupi,
-        payer_vpa=payer_account,
-        payee_vpa=payee_account,
+        payer_vpa=payer_vpa,
+        payee_vpa=payee_vpa,
         amount=payload.amount,
-        payer_account=payer_account,
-        payer_ifsc=payer_ifsc,
-        payee_account=payee_account,
-        payee_ifsc=payee_ifsc,
+        # payer_account=payer_account,
+        # payer_ifsc=payer_ifsc,
+        # payee_account=payee_account,
+        # payee_ifsc=payee_ifsc,
     )
 
     db.add(txn)
     db.commit()
 
+    block_chaindata_token = create_access_token(block_chaindata, settings.SERVER_TO_SERVER_SECRET_KEY,settings.SERVER_TO_SERVER_EXPIRE_MINUTES)
+    callback_params = {
+        'transection' : block_chaindata_token
+    }
+    # print(block_chaindata)
+    # requests.get(f"{settings.KYC_SERVER}/transection_data?{urlencode(callback_params)}")
+    url = f"{settings.KYC_SERVER}/transection_data?{urlencode(callback_params)}"
+    print("Sending to:", url)
+    response = requests.get(url)
+
+    print("Response status:", response.status_code)
     return {"success": True}

@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     DATABASE_URL: str
+    SERVER_TO_SERVER_SECRET_KEY: str
+    SERVER_TO_SERVER_EXPIRE_MINUTES:int
+    KYC_SERVER:str
 
     class Config:
         env_file = ".env"  # Load from the .env file

@@ -8,7 +8,7 @@ class WalletBase(BaseModel):
 
 class Wallet(WalletBase):
     balance: float
-    pin: str
+    # pin: str
     vpa: str
     
     class Config:
@@ -42,10 +42,10 @@ class Transaction(TransactionBase):
     transaction_id: str
     payer_vpa: str
     payee_vpa: str
-    payer_account: str
-    payer_ifsc: str
-    payee_account: str
-    payee_ifsc: str
+    # payer_account: str
+    # payer_ifsc: str
+    # payee_account: str
+    # payee_ifsc: str
     timestamp: datetime
     
     class Config:
@@ -55,3 +55,7 @@ class TransactionResult(BaseModel):
     message: str
     new_balance: float
     transaction_id: str
+
+class WalletCreate(BaseModel):
+    vpa: str
+    pin: int

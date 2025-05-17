@@ -346,7 +346,7 @@
     <div class="nav-bar">
       <div class="logo">FinancePal</div>
       <div class="nav-actions">
-        <a href="transaction.html">New Transaction</a>
+        <a href="/transaction">New Transaction</a>
         <a href="#" id="logoutBtn">Logout</a>
       </div>
     </div>
@@ -354,14 +354,25 @@
     <div id="alertContainer"></div>
 
     <!-- Balance Card -->
-    <div class="card balance-card">
-      <div class="balance-title">Available Balance</div>
-      <div class="balance-amount" id="balanceDisplay">₹0.00</div>
-      <div class="btn-group">
-        <a href="/transaction" class="btn btn-secondary">Send Money</a>
-        <button id="addMoneyBtn" class="btn btn-primary">Add Money</button>
-      </div>
+    <!-- Balance Card -->
+<div class="card balance-card">
+  <div id="walletExistsContent">
+    <p id="vpaDisplay"></p>
+    <div class="balance-title">Available Balance</div>
+    <div class="balance-amount" id="balanceDisplay">₹0.00</div>
+    <div class="btn-group">
+      <a href="/transaction" class="btn btn-secondary">Send Money</a>
+      <button id="addMoneyBtn" class="btn btn-primary">Add Money</button>
     </div>
+  </div>
+  
+  <div id="noWalletContent" style="display: none; text-align: center;">
+    <div style="margin-bottom: 1.5rem;">
+      <p>You don't have a wallet yet</p>
+    </div>
+    <a href="/create-wallet" class="btn btn-primary">Create Wallet</a>
+  </div>
+</div>
 
     <!-- Tabs Navigation -->
     <div class="card">
@@ -542,6 +553,7 @@
   <script>
     const API_BASE = 'http://localhost:8000';
     const balanceDisplay = document.getElementById('balanceDisplay');
+    const vpaDisplay = document.getElementById('vpaDisplay');
     const transactionsList = document.getElementById('transactionsList');
     const bankAccountsList = document.getElementById('bankAccountsList');
     const tabs = document.querySelectorAll('.tab');
@@ -610,12 +622,37 @@
     }
 
     // Fetch wallet & transactions
+   
+  
+
     async function loadWallet() {
-      const w = await api('/walletdata');
-      user.wallet = w;
-      balanceDisplay.textContent = `₹${w.balance.toFixed(2)}`;
-      const txs = await api('/transactions');
-      renderTransactions(txs);
+      try {
+        const w = await api('/walletdata');
+        if (w && w.balance !== undefined) {
+          // Wallet exists - show normal balance card
+          document.getElementById('walletExistsContent').style.display = 'block';
+          document.getElementById('noWalletContent').style.display = 'none';
+          console.log(w)
+          
+          user.uupi = w.vpa.split("@")[0]
+          user.wallet = w;
+          balanceDisplay.textContent = `₹${w.balance.toFixed(2)}`;
+          vpaDisplay.textContent = `${w.vpa}`
+          
+          // Load transactions if wallet exists
+          const txs = await api('/transactions_details');
+          renderTransactions(txs);
+        } else {
+          // No wallet - show create button
+          document.getElementById('walletExistsContent').style.display = 'none';
+          document.getElementById('noWalletContent').style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Wallet error:', error);
+        // If 404 or similar error, show create button
+        document.getElementById('walletExistsContent').style.display = 'none';
+        document.getElementById('noWalletContent').style.display = 'block';
+      }
     }
 
     function renderTransactions(txs) {
@@ -623,7 +660,11 @@
         transactionsList.innerHTML = `<div class="empty-state"><p>No transactions</p></div>`;
         return;
       }
+      console.log("txn ", txs);
+      
       transactionsList.innerHTML = txs.map(t=>{
+        console.log("user",user);
+        
         const credit = t.payee_uupi===user.uupi;
         const sign = credit?'+':'-';
         return `

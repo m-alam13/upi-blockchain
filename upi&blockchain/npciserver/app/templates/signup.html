@@ -226,10 +226,14 @@
                 })
             })
             .then(response =>{
-                
+                 
                 data = response.json()
                  console.log(data);
-                if (response.status==201) {
+                if (response.redirected) {
+                    window.location.href = response.url; 
+                    return // ✅ this causes a full browser navigation
+                }
+                else if (response.status==201) {
                     // On successful login, redirect to the wallet page
                     localStorage.setItem('userEmail', email); // Simulate session
                     alert('Login successful! Redirecting to wallet page...');
