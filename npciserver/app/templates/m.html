@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FinancePal - Your Wallet</title>
+  <script>let isRead = false</script>
+  <style>
+    /* Minimal CSS to style VPA section */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-inline {
+      display: flex;
+      gap: 0.5rem;
+    }
+    #vpaPreview {
+      font-weight: bold;
+      margin-top: 0.5rem;
+      color: #2ecc71;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Add Bank Account</h2>
+
+    <div class="form-group">
+      <label for="bankName">Bank Name</label>
+      <input type="text" id="bankName" class="form-control" placeholder="e.g. State Bank of India" />
+    </div>
+
+    <div class="form-group">
+      <label>VPA (UPI ID)</label>
+      <div class="form-inline">
+        <input type="text" id="vpaPrefix" class="form-control" placeholder="Enter handle (e.g. rahul123)" />
+        <input type="text" id="vpaSuffix" class="form-control" readonly />
+      </div>
+      <div id="vpaPreview"></div>
+    </div>
+  </div>
+
+  <script>
+    const bankInput = document.getElementById('bankName');
+    const vpaPrefixInput = document.getElementById('vpaPrefix');
+    const vpaSuffixInput = document.getElementById('vpaSuffix');
+    const vpaPreview = document.getElementById('vpaPreview');
+
+    function getBankCode(bankName) {
+      const map = {
+        "state bank of india": "sbi",
+        "hdfc bank": "hdfc",
+        "icici bank": "icici",
+        "axis bank": "axis",
+        "bank of baroda": "bob",
+        "punjab national bank": "pnb"
+      };
+      const key = bankName.toLowerCase().trim();
+      let code = map[key] || bankName.split(' ').map(w => w[0]).join('').toLowerCase();
+      if (code.length === 2) code += "m";
+      else if (code.length === 1) code += "ma";
+      return code;
+    }
+
+    function updateVPA() {
+      const prefix = vpaPrefixInput.value.trim();
+      const suffix = getBankCode(bankInput.value.trim());
+
+      if (suffix) {
+        vpaSuffixInput.value = '@' + suffix;
+        if (prefix) {
+          vpaPreview.textContent = `Full VPA: ${prefix}@${suffix}`;
+        } else {
+          vpaPreview.textContent = '';
+        }
+      } else {
+        vpaSuffixInput.value = '';
+        vpaPreview.textContent = '';
+      }
+    }
+
+    bankInput.addEventListener('input', updateVPA);
+    vpaPrefixInput.addEventListener('input', updateVPA);
+  </script>
+</body>
+</html>

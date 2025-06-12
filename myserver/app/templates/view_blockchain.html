@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Blockchain Viewer</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        /* .block-card {
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 16px;
+            margin: 12px;
+            cursor: pointer;
+            background-color: #f9f9f9;
+        }
+        .block-data {
+            display: none;
+            margin-top: 10px;
+            background-color: #eef;
+            padding: 10px;
+            border-radius: 6px;
+        } */
+        .blockchain-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        justify-content: center;
+        align-items: flex-start; /* Don't stretch height */
+        padding: 20px;
+    }
+
+    .block-card {
+        flex: 1 1 calc(25% - 32px); /* 4 per row with gap */
+        max-width: calc(25% - 32px);
+        min-width: 250px;
+        box-sizing: border-box;
+
+        background-color: #f9f9f9;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 16px;
+        margin: 8px;
+        cursor: pointer;
+
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .block-card p {
+        word-break: break-word;
+        white-space: normal;
+    }
+
+    .block-data {
+        display: none;
+        margin-top: 10px;
+        background-color: #eef;
+        padding: 10px;
+        border-radius: 6px;
+    }
+
+    @media (max-width: 1024px) {
+        .block-card {
+            flex: 1 1 calc(33.333% - 32px);
+            max-width: calc(33.333% - 32px); /* 3 per row */
+        }
+    }
+
+    @media (max-width: 768px) {
+        .block-card {
+            flex: 1 1 calc(50% - 32px);
+            max-width: calc(50% - 32px); /* 2 per row */
+        }
+    }
+
+    @media (max-width: 480px) {
+        .block-card {
+            flex: 1 1 100%;
+            max-width: 100%; /* 1 per row */
+        }
+    }
+    </style>
+</head>
+<body>
+    <h1 style="text-align:center;">🧱 Blockchain Blocks ({{ length }} total)</h1>
+    <div class="blockchain-container">
+        {% for block in blocks %}
+        <div class="block-card" onclick="toggleDetails(block.index )">
+            <h2>Block #{{ block.index }}</h2>
+            <p><strong>Hash:</strong> {{ block.hash }}</p>
+            <p><strong>Previous Hash:</strong> {{ block.previous_hash }}</p>
+            <p><strong>Timestamp:</strong> {{ block.timestamp | datetimeformat }}</p>
+
+            <div class="block-data" id="details-{{ loop.index0 }}">
+                <h3>Transaction:</h3>
+                <p><strong>Txn ID:</strong> {{ block.data["transaction_id"] }}</p>
+                <p><strong>Payer:</strong> {{ block.data["payer_uupi"] }} ({{ block.data["payer_vpa"] }})</p>
+                <p><strong>Payee:</strong> {{ block.data["payee_uupi"] }} ({{ block.data["payee_vpa"] }})</p>
+                <p><strong>Amount:</strong> ₹{{ block.data["amount"] }}</p>
+                <p><strong>IFSC (Payer/Payee):</strong> {{ block.data["payer_ifsc"] }} / {{ block.data["payee_ifsc"] }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        function toggleDetails(index) {
+            const blockData = document.getElementById("details-" + index);
+            if (blockData.style.display === "none" || blockData.style.display === "") {
+                blockData.style.display = "block";
+            } else {
+                blockData.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>

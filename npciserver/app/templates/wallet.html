@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FinancePal - Your Wallet</title>
+  <script>let isRead = false</script>
+  <style>
+    /* — your existing CSS — */
+    :root {
+            --primary: #3498db;
+            --primary-dark: #2980b9;
+            --secondary: #2ecc71;
+            --light: #ecf0f1;
+            --dark: #34495e;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --success-light: #d5f5e3;
+            --danger-light: #fadbd8;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f9f9f9;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .balance-card {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .balance-title {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+        
+        .balance-amount {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .btn {
+            display: block;
+            flex: 1;
+            padding: 0.8rem;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #27ae60;
+        }
+        
+        .section-title {
+            font-size: 1.2rem;
+            color: var(--dark);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .transactions-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        
+        .transaction-details {
+            flex: 1;
+        }
+        
+        .transaction-payee {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .transaction-date {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+        
+        .transaction-amount {
+            font-weight: bold;
+        }
+        
+        .amount-credit {
+            color: var(--secondary);
+        }
+        
+        .amount-debit {
+            color: var(--danger);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #7f8c8d;
+        }
+        
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            background-color: var(--primary);
+            padding: 1rem;
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+        }
+        .error-message {
+            color: var(--danger);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
+        .success-message {
+            color: var(--secondary);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        .nav-actions a {
+            color: white;
+            text-decoration: none;
+            margin-left: 1rem;
+        }
+        
+        .tab-container {
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 1rem;
+        }
+        
+        .tabs {
+            display: flex;
+        }
+        
+        .tab {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab.active {
+            font-weight: 600;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            color: var(--dark);
+        }
+
+        .close-btn {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark);
+        }
+
+        /* Bank details display */
+        .bank-details-display {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: var(--light);
+            border-radius: 5px;
+        }
+
+        .bank-details-row {
+            display: flex;
+            margin-bottom: 0.5rem;
+        }
+
+        .bank-details-label {
+            font-weight: 500;
+            width: 150px;
+            color: var(--dark);
+        }
+
+        .bank-details-value {
+            flex: 1;
+        }
+
+        /* Loading state */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Alert messages */
+        .alert {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background-color: var(--success-light);
+            color: var(--secondary);
+        }
+
+        .alert-danger {
+            background-color: var(--danger-light);
+            color: var(--danger);
+        }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav-bar">
+      <div class="logo">FinancePal</div>
+      <div class="nav-actions">
+        <a href="/transaction">New Transaction</a>
+        <a href="#" id="logoutBtn">Logout</a>
+      </div>
+    </div>
+
+    <div id="alertContainer"></div>
+
+    <!-- Balance Card -->
+    <!-- Balance Card -->
+<div class="card balance-card">
+  <div id="walletExistsContent">
+    <p id="vpaDisplay"></p>
+    <div class="balance-title">Available Balance</div>
+    <div class="balance-amount" id="balanceDisplay">₹0.00</div>
+    <div class="btn-group">
+      <a href="/transaction" class="btn btn-secondary">Send Money</a>
+      <button id="addMoneyBtn" class="btn btn-primary">Add Money</button>
+    </div>
+  </div>
+  
+  <div id="noWalletContent" style="display: none; text-align: center;">
+    <div style="margin-bottom: 1.5rem;">
+      <p>You don't have a wallet yet</p>
+    </div>
+    <a href="/create-wallet" class="btn btn-primary">Create Wallet</a>
+  </div>
+</div>
+
+    <!-- Tabs Navigation -->
+    <div class="card">
+      <div class="tab-container">
+        <div class="tabs">
+          <div class="tab active" data-tab="transactions">Transactions</div>
+          <div class="tab" data-tab="bank">Bank Accounts</div>
+          <div class="tab" data-tab="upi">UPI Settings</div>
+        </div>
+      </div>
+
+      <!-- Transactions Tab -->
+      <div class="tab-content active" id="transactions-tab">
+        <h3 class="section-title">Recent Transactions</h3>
+        <div class="transactions-list" id="transactionsList">
+          <div class="loading">
+            <div class="spinner"></div>
+            <p>Loading transactions...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bank Accounts Tab -->
+      <div class="tab-content" id="bank-tab">
+        <h3 class="section-title">Your Bank Accounts</h3>
+        <div id="bankAccountsList" class="transactions-list">
+          <div class="loading">
+            <div class="spinner"></div>
+            <p>Loading accounts...</p>
+          </div>
+        </div>
+        <button id="newAccountBtn" class="btn btn-primary">Add New Bank Account</button>
+
+        <!-- Modal: Add/Edit Bank Account -->
+        <div class="modal" id="bankAccountModal" >
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 class="modal-title" id="bankModalTitle">Add Bank Account</h3>
+              <span class="close-btn">&times;</span>
+            </div>
+            <form id="bankAccountForm" style="max-height: 400px; overflow-y: auto;">
+                <input type="hidden" id="accountId" />
+
+                <div class="form-group">
+                    <label for="accountName">Account Holder Name</label>
+                    <input type="text" id="accountName" class="form-control" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="accountNumber">Account Number</label>
+                    <input type="text" id="accountNumber" class="form-control" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="ifscCode">IFSC Code</label>
+                    <input type="text" id="ifscCode" class="form-control" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="bankName">Bank Name</label>
+                    <input type="text" id="bankName" class="form-control" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="branchName">Branch Name</label>
+                    <input type="text" id="branchName" class="form-control" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="vpa">VPA (UPI ID)</label>
+                    <input type="text" id="vpaPrefix" class="form-control" placeholder="Enter vpa (e.g. rahul123)" required/>
+                    <input type="text" id="vpaSuffix" class="form-control" readonly />
+                   <input type="text" id="vpa" class="form-control" hidden  required/>
+                </div>
+                <div id="vpaPreview"></div>
+                <div class="error-message" id="payeeUpiError"></div>
+                <div class="success-message" id="payeeUpiSuccess"></div>
+                <div id="upiValidationStatus"></div>
+
+                <div class="form-group">
+                    <label for="balance">Balance</label>
+                    <input type="number" id="balance"  class="form-control" min="0" step="0.01" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="upiPin">UPI PIN</label>
+                    <input type="password" id="upiPin" class="form-control" required />
+                </div>
+
+                <div class="form-check mb-3">
+                    <input type="checkbox" id="isPrimary" class="form-check-input" />
+                    <label class="form-check-label" for="isPrimary">Primary Account</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- UPI Settings Tab -->
+      <div class="tab-content" id="upi-tab">
+        <h3 class="section-title">UPI Settings</h3>
+        <div id="upiIdDisplay" style="margin-bottom:1.5rem;">
+          <div class="bank-details-row">
+            <div class="bank-details-label">Your UPI ID:</div>
+            <div class="bank-details-value" id="displayUpiId"></div>
+          </div>
+        </div>
+        <form id="upiSettingsForm">
+          <div class="form-group">
+            <label for="currentUpiPin">Current UPI PIN</label>
+            <input type="password" id="currentUpiPin" class="form-control" maxlength="6" pattern="\d{6}" required/>
+          </div>
+          <div class="form-group">
+            <label for="newUpiPin">New UPI PIN</label>
+            <input type="password" id="newUpiPin" class="form-control" maxlength="6" pattern="\d{6}" required/>
+          </div>
+          <div class="form-group">
+            <label for="confirmUpiPin">Confirm New UPI PIN</label>
+            <input type="password" id="confirmUpiPin" class="form-control" maxlength="6" pattern="\d{6}" required/>
+          </div>
+          <button type="submit" class="btn btn-primary">Change UPI PIN</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+<div class="modal" id="addMoneyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Money to Wallet</h3>
+                <span class="close-btn">&times;</span>
+            </div>
+            <form id="addMoneyForm">
+                <div class="form-group">
+                    <label for="amount">Amount (₹)</label>
+                    <input type="number" id="amount" class="form-control" placeholder="Enter amount" min="100" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="addMoneyMethod">Payment Method</label>
+                    <select id="addMoneyMethod" class="form-control" required>
+                        <option value="">Select payment method</option>
+                        <option value="upi">UPI</option>
+                        <option value="bank">Bank Transfer</option>
+                        <option value="card">Debit/Credit Card</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Add Money</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bank Balance Modal -->
+    <div class="modal" id="bankBalanceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Bank Account Balance</h3>
+                <span class="close-btn">&times;</span>
+            </div>
+            <div class="bank-details-display">
+                <div class="bank-details-row">
+                    <div class="bank-details-label">Account Holder:</div>
+                    <div class="bank-details-value" id="modalAccountName"></div>
+                </div>
+                <div class="bank-details-row">
+                    <div class="bank-details-label">Account Number:</div>
+                    <div class="bank-details-value" id="modalAccountNumber"></div>
+                </div>
+                <div class="bank-details-row">
+                    <div class="bank-details-label">Bank Name:</div>
+                    <div class="bank-details-value" id="modalBankName"></div>
+                </div>
+                <div class="bank-details-row">
+                    <div class="bank-details-label">Available Balance:</div>
+                    <div class="bank-details-value" id="modalBankBalance" style="font-weight: bold; font-size: 1.2rem;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+  <script>
+    const API_BASE = 'http://localhost:8000';
+    const balanceDisplay = document.getElementById('balanceDisplay');
+    const vpaDisplay = document.getElementById('vpaDisplay');
+    const transactionsList = document.getElementById('transactionsList');
+    const bankAccountsList = document.getElementById('bankAccountsList');
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const addMoneyBtn = document.getElementById('addMoneyBtn');
+    const addMoneyModal = document.getElementById('addMoneyModal');
+    const closeModalBtns = document.querySelectorAll('.close-btn');
+    const addMoneyForm = document.getElementById('addMoneyForm');
+    // Bank-account modal & form
+    const newAccountBtn = document.getElementById('newAccountBtn');
+    const bankModal = document.getElementById('bankAccountModal');
+    const closeBtns = document.querySelectorAll('.close-btn');
+    const bankForm = document.getElementById('bankAccountForm');
+    const bankModalTitle = document.getElementById('bankModalTitle');
+    const accountIdInput = document.getElementById('accountId');
+    const accountNameInput = document.getElementById('accountName');
+    const accountNumberInput = document.getElementById('accountNumber');
+    const ifscInput = document.getElementById('ifscCode');
+    const bankNameInput = document.getElementById('bankName');
+    const upiPinInput = document.getElementById('upiPin');
+    const branchNameInput = document.getElementById('branchName');
+    const vpaPrefixInput = document.getElementById('vpaPrefix');
+    const vpaSuffixInput = document.getElementById('vpaSuffix');
+    const vpaPreview = document.getElementById('vpaPreview');
+    const vpaInput = document.getElementById('vpa');
+    const balanceInput = document.getElementById('balance');
+    const isPrimaryInput = document.getElementById('isPrimary');
+    const bankBalanceModal = document.getElementById('bankBalanceModal');
+    const bankFormTitle = document.getElementById('bankFormTitle');
+    const payeeUpiError = document.getElementById('payeeUpiError');
+    const payeeUpiSuccess = document.getElementById('payeeUpiSuccess');
+    const upiValidationStatus = document.getElementById('upiValidationStatus');
+   
+
+    let user = { uupi: '', wallet: { balance: 0 } };
+    let upiValidationTimer = null;
+    let bankAccounts = [];
+    let IsvapExist = false
+    function collectBankFormData() {
+    const data = {
+        bank_name: bankNameInput.value.trim(),
+        account_number: accountNumberInput.value.trim(),
+        ifsc_code: ifscInput.value.trim(),
+        branch_name: branchNameInput.value.trim(),
+        account_holder_name: accountNameInput.value.trim(),
+        upi_pin: upiPinInput.value.trim(),
+        vpa: vpaInput.value.trim(),
+        balance: parseFloat(balanceInput.value) || 0,
+        is_primary: isPrimaryInput.checked
+    };
+    return data;
+}
+
+    function showAlert(msg, type='success') {
+      const div = document.createElement('div');
+      div.className = `alert alert-${type}`;
+      div.textContent = msg;
+      document.getElementById('alertContainer').append(div);
+      setTimeout(() => div.remove(), 4000);
+    }
+    
+
+    async function api(endpoint, method='GET', body) {
+      const opts = {
+        method, credentials:'include',
+        headers: {'Content-Type':'application/json'}
+      };
+      if (body) opts.body = JSON.stringify(body);
+      const res = await fetch(API_BASE + endpoint, opts);
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail||res.statusText);
+      }
+      return res.json();
+    }
+
+    // Fetch wallet & transactions
+   
+  
+
+    async function loadWallet() {
+      try {
+        const w = await api('/walletdata');
+        if (w && w.balance !== undefined) {
+          // Wallet exists - show normal balance card
+          document.getElementById('walletExistsContent').style.display = 'block';
+          document.getElementById('noWalletContent').style.display = 'none';
+          console.log(w)
+          
+          user.uupi = w.vpa.split("@")[0]
+          user.wallet = w;
+          balanceDisplay.textContent = `₹${w.balance.toFixed(2)}`;
+          vpaDisplay.textContent = `${w.vpa}`
+          
+          // Load transactions if wallet exists
+          const txs = await api('/transactions_details');
+          renderTransactions(txs);
+        } else {
+          // No wallet - show create button
+          document.getElementById('walletExistsContent').style.display = 'none';
+          document.getElementById('noWalletContent').style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Wallet error:', error);
+        // If 404 or similar error, show create button
+        document.getElementById('walletExistsContent').style.display = 'none';
+        document.getElementById('noWalletContent').style.display = 'block';
+      }
+    }
+
+    function renderTransactions(txs) {
+      if (!txs.length) {
+        transactionsList.innerHTML = `<div class="empty-state"><p>No transactions</p></div>`;
+        return;
+      }
+      console.log("txn ", txs);
+      
+      transactionsList.innerHTML = txs.map(t=>{
+        console.log("user",user);
+        
+        const credit = t.payee_uupi===user.uupi;
+        const sign = credit?'+':'-';
+        return `
+          <div class="transaction-item">
+            <div class="transaction-details">
+              <div class="transaction-payee">${credit?'From':'To'}: ${credit?t.payer_vpa:t.payee_vpa}</div>
+              <div class="transaction-payee">${!credit?'From':'To'}: ${!credit?t.payer_vpa:t.payee_vpa}</div>
+              <div class="transaction-id">Transection id: ${t.transaction_id}</div>
+              <div class="transaction-date">${new Date(t.timestamp).toLocaleString()}</div>
+            </div>
+            <div class="transaction-amount ${credit?'amount-credit':'amount-debit'}">
+              ${sign}₹${t.amount.toFixed(2)}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // Bank-account CRUD
+    async function loadBankAccounts() {
+      bankAccounts = await api('/bank-accounts');
+      if (!bankAccounts.length) {
+        bankAccountsList.innerHTML = `<div class="empty-state"><p>No bank accounts</p></div>`;
+        return;
+      }
+      console.log(bankAccountsList)
+      bankAccountsList.innerHTML = bankAccounts.map(a=>{
+        return `
+          <div class="transaction-item">
+            <div>
+              <strong>Bank Name:${a.bank_name}</strong> (${a.ifsc_code})<br/>
+           
+              <p>VPA: ${a.vpa}</p>
+              <p>Blance: ₹${a.balance}</p>
+
+              ${a.account_number} ${a.is_primary?'<span style="color:green">(Primary)</span>':''}
+            </div>
+            <div style="text-align:right">
+              <button data-id="${a.id}" class="btn btn-secondary btn-sm edit-account">Edit</button>
+              <button data-id="${a.id}" class="btn btn-danger btn-sm delete-account">Delete</button>
+              <button data-id="${a.id}" class="btn btn-primary btn-sm set-primary">Set Primary</button>
+            </div>
+          </div>`;
+      }).join('');
+
+      // attach handlers
+      document.querySelectorAll('.edit-account').forEach(btn=>{
+        btn.onclick = ()=>openBankModal(bankAccounts.find(a=>a.id==btn.dataset.id));
+      });
+      document.querySelectorAll('.delete-account').forEach(btn=>{
+        btn.onclick = async ()=>{
+          if(confirm('Delete this account?')) {
+            await api(`/bank-accounts/${btn.dataset.id}`, 'DELETE');
+            showAlert('Deleted');
+            loadBankAccounts();
+          }
+        };
+      });
+      document.querySelectorAll('.set-primary').forEach(btn=>{
+        btn.onclick = async ()=>{
+          await api(`/bank-accounts/${btn.dataset.id}/set-primary`, 'POST');
+          showAlert('Primary updated');
+          loadBankAccounts();
+        };
+      });
+    }
+
+     // Modal handling
+        addMoneyBtn.addEventListener('click', () => {
+            addMoneyModal.style.display = 'flex';
+        });
+
+        closeModalBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                addMoneyModal.style.display = 'none';
+                bankBalanceModal.style.display = 'none';
+            });
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === addMoneyModal) {
+                addMoneyModal.style.display = 'none';
+            }
+            if (e.target === bankBalanceModal) {
+                bankBalanceModal.style.display = 'none';
+            }
+        });
+
+    function openBankModal(account=null) {
+      if (account) {
+        isRead = true;
+        bankModalTitle.textContent = 'Edit Bank Account';
+        accountIdInput.value = account.id;
+        accountNameInput.value = account.account_name;
+        accountNumberInput.value = account.account_number;
+        ifscInput.value = account.ifsc_code;
+        bankNameInput.value = account.bank_name;
+        upiPinInput.value = account.upi_pin;
+        
+        branchNameInput.value = account.branch_name;
+        vpaInput.value = account.vpa;
+        balanceInput.value = account.balance;
+        isPrimaryInput.value = account.is_primary;
+
+        branchNameInput.value = account.branch_name;
+      
+        console.log("bankName", account.bank_name);
+        
+        
+      } else {
+        bankModalTitle.textContent = 'Add Bank Account';
+        accountIdInput.value = '';
+        bankForm.reset();
+      }
+      bankModal.style.display = 'flex';
+    }
+
+    bankForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const id = accountIdInput.value;
+      const payload = {
+  
+        account_holder_name: accountNameInput.value,
+        branch_name: branchNameInput.value,
+  
+        account_number: accountNumberInput.value,
+        ifsc_code: ifscInput.value,
+        bank_name: bankNameInput.value,
+        upi_pin: upiPinInput.value,
+        
+      };
+       const bankData = collectBankFormData();
+      if (id) {
+        console.log(payload);
+        
+        await api(`/bank-accounts/${id}`, 'PUT', payload);
+        showAlert('Account updated');
+      } else {
+        console.log(bankData);
+        if (IsvapExist){
+          return
+        }
+        await api('/bank-accounts', 'POST', bankData);
+        showAlert('Account created');
+      }
+      bankModal.style.display = 'none';
+      loadBankAccounts();
+    };
+
+    newAccountBtn.onclick = ()=> openBankModal();
+
+    // Close all modals
+    closeBtns.forEach(btn=>{
+      btn.onclick = ()=> document.querySelectorAll('.modal').forEach(m=>m.style.display='none');
+    });
+    window.onclick = e => {
+      if (e.target.classList.contains('modal')) e.target.style.display='none';
+    };
+
+    // Logout
+    logoutBtn.onclick = e=>{
+      e.preventDefault();
+      localStorage.removeItem('authToken');
+      window.location.href = '/login';
+    };
+
+    // Tab switching
+    tabs.forEach(tab=>{
+      tab.onclick = ()=>{
+        tabs.forEach(t=>t.classList.remove('active'));
+        tab.classList.add('active');
+        tabContents.forEach(c=>c.classList.remove('active'));
+        document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+      };
+    });
+
+    function getBankCode(bankName) {
+      const map = {
+        "state bank of india": "sbi",
+        "hdfc bank": "hdfc",
+        "icici bank": "icici",
+        "axis bank": "axis",
+        "bank of baroda": "bob",
+        "punjab national bank": "pnb"
+      };
+      const key = bankName.toLowerCase().trim();
+      let code = map[key] || bankName.split(' ').map(w => w[0]).join('').toLowerCase();
+      if (code.length === 2) code += "m";
+      else if (code.length === 1) code += "ma";
+      console.log(code);
+      
+      return code;
+    }
+
+    function updateVPA() {
+      console.log(("MMMMMMMMmm"));
+      
+      const prefix = vpaPrefixInput.value.trim();
+      const suffix = getBankCode(bankNameInput.value.trim());
+
+      if (suffix) {
+        vpaSuffixInput.value = '@' + suffix;
+        if (prefix) {
+          vpaPreview.textContent = `Full VPA: ${prefix}@${suffix}`;
+          vpaInput.value = `${prefix}@${suffix}`
+          vpaInput.dispatchEvent(new Event('input'));
+        } else {
+          vpaPreview.textContent = '';
+          vpaInput.value = ''
+          vpaInput.dispatchEvent(new Event('input'));
+        }
+      } else {
+        vpaSuffixInput.value = '';
+        vpaPreview.textContent = '';
+      }
+    }
+
+    bankNameInput.addEventListener('input', updateVPA);
+    vpaPrefixInput.addEventListener('input', updateVPA);
+
+    function setupEventListeners() {
+            vpaInput.addEventListener('input', () => {
+                // Clear previous timer
+                clearTimeout(upiValidationTimer);
+                
+                // Hide previous messages
+                console.log("oooo");
+                
+                payeeUpiError.style.display = 'none';
+                payeeUpiSuccess.style.display = 'none';
+                
+                // Start new timer
+                upiValidationTimer = setTimeout(async () => {
+                    const upiId = vpaInput.value.trim();
+                    
+                    if (!upiId || !upiId.includes('@')) {
+                        return;
+                    }
+                    
+                    // Show loading
+                    upiValidationStatus.innerHTML = `<span class="loading"></span> Validating UPI ID...`;
+                    
+                    try {
+                        const response = await fetch(`/transaction/validate-upi/${encodeURIComponent(upiId)}`, {
+                            credentials:'include',  
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            }
+                        });
+                        
+                        const data = await response.json();
+                        console.log(data.valid);
+                        
+                        if (data.valid) {
+                          IsvapExist = false;
+                            if (!data.exists) {
+                                payeeUpiSuccess.textContent = `Valid UPI ID format`;
+                                payeeUpiSuccess.style.display = 'block';
+                            } else {
+                                payeeUpiError.textContent = 'VPA already exists';
+                                payeeUpiError.style.display = 'block';
+                            }
+                            upiValidationStatus.innerHTML = '';
+                        } else {
+                            payeeUpiError.textContent =  'Invalid vpa';
+                            payeeUpiError.style.display = 'block';
+                            upiValidationStatus.innerHTML = '';
+                            IsvapExist = true
+                        }
+                    } catch (error) {
+                        console.log('Error validating UPI ID:', error);
+                        upiValidationStatus.innerHTML = '';
+                    }
+                }, 2000);
+            });
+          }
+    document.addEventListener('DOMContentLoaded', () => {
+      loadWallet();
+      loadBankAccounts();
+      setupEventListeners();
+    });
+  </script>
+</body>
+</html>
