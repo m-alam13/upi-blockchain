@@ -39,21 +39,22 @@ async def signup(user: user_schema.UserCreate, db):
     # )
     data = {
         'email': db_user.email,
-        'callback_url': "http://localhost:8000/verify-callback"
+        'callback_url': f"{settings.MY_URL}/verify-callback"
     }
     server_token = create_access_token(data,settings.SERVER_TO_SERVER_SECRET_KEY, settings.SERVER_TO_SERVER_EXPIRE_MINUTES)
     callback_params = {
             "token": server_token,
-            'callback_url': "http://localhost:8000/verify-callback"
+            'callback_url': f"{settings.MY_URL}/verify-callback"
         
         }
         # return JSONResponse(
         #     content={"redirect_url": f"{settings.KYC_SERVER}?{urlencode(callback_params)}"},
         #     status_code=200
         # )
-    response = RedirectResponse(f"{settings.KYC_SERVER}/verify?{urlencode(callback_params)}", status_code=303)
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    return response
+    # response = RedirectResponse(f"{settings.KYC_SERVER}/verify?{urlencode(callback_params)}", status_code=303)
+    
+    # response.headers["Access-Control-Allow-Origin"] = "*"
+    return JSONResponse(content={"message": "Signup successful"}, status_code=201)
     # return RedirectResponse(f"{settings.KYC_SERVER}?{urlencode(callback_params)}", status_code=303)
     # return res
 
@@ -67,12 +68,12 @@ async def login(response ,user: user_schema.UserLogin, db: Session = Depends(get
     if not db_user.uupi:
         data = {
         'email': db_user.email,
-        'callback_url': "http://localhost:8000/verify-callback"
+        'callback_url': f"{settings.MY_URL}/verify-callback"
     }
         server_token = create_access_token(data,settings.SERVER_TO_SERVER_SECRET_KEY, settings.SERVER_TO_SERVER_EXPIRE_MINUTES)
         callback_params = {
                 "token": server_token,
-                'callback_url': "http://localhost:8000/verify-callback"
+                'callback_url': f"{settings.MY_URL}/verify-callback"
             
             }
         # return JSONResponse(

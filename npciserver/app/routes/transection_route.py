@@ -149,10 +149,13 @@ async def process_transaction(
 
     # Validate recipient
     uupi = payload.payeeUpi.split('@')[0]
-    receiver: User = db.query(User).filter(User.uupi == uupi).first()
+    if payload.payeeUpi.split('@')[1] == 'wallet':
+        receiver: User = db.query(User).filter(User.uupi == uupi).first()
+    else:
+        receiver: User = db.query(User).join(BankDetails).filter(BankDetails.vpa == payload.payeeUpi ).first()
     if not receiver:
         raise HTTPException(status_code=404, detail="Payee UPI not found")
-
+    print(receiver)
     # Determine payment method
     payer_account = payer_ifsc = ""
     payee_account = payee_ifsc = ""
@@ -185,8 +188,9 @@ async def process_transaction(
         raise HTTPException(status_code=400, detail="Invalid payment method")
 
     # Credit receiver's wallet
-    receiver_wallet = receiver.wallet
-    if receiver_wallet:
+    # receiver_wallet = receiver.wallet
+    if payload.payeeUpi.split('@')[1] == 'wallet':
+        receiver_wallet = receiver.wallet
         receiver_wallet.balance += payload.amount
         payee_account = f"wallet-{receiver_wallet.vpa}"
         payee_ifsc = "WALLET"
@@ -242,15 +246,37 @@ async def process_transaction(
     #     send_to_kyc,
     #     url
     # )
+    # try:
+    #     async with httpx.AsyncClient(timeout=5) as client:
+    #         resp = await client.get(url)
+    #     print("Response status:", resp.status_code)
+    #     db.add(txn)
+    #     db.commit()
+    # except httpx.RequestError as exc:
+    #     print(f"KYC callback failed: {exc}")
+    #     db.rollback()
     try:
-        async with httpx.AsyncClient(timeout=5) as client:
+        async with httpx.AsyncClient(timeout=10) as client:
             resp = await client.get(url)
-        print("Response status:", resp.status_code)
+            print("Callback response status:", resp.status_code)
+
+        if resp.status_code == 200:
+            db.add(txn)
+            db.commit()
+            print("Transaction stored successfully.")
+        else:
+            print(f"KYC service returned error: {resp.status_code}")
+            db.rollback()
+
     except httpx.RequestError as exc:
-        print(f"KYC callback failed: {exc}")
+        print(f"Network error during KYC callback: {exc}")
+        db.rollback()
+
+    except SQLAlchemyError as db_exc:
+        print(f"DB error: {db_exc}")
+        db.rollback()
         # you can still return success or raise, as fits your business logic
     # response = requests.get(url)
-    db.add(txn)
-    db.commit()
+    
     # print("Response status:", response.status_code)
     return {"success": True}

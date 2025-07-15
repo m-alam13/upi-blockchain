@@ -21,6 +21,7 @@ async def create_bank_account(
     token_data: dict = Depends(verify_access_token_from_cookie)
 ):
     """Create a new bank account for the authenticated user"""
+    print("MMMMMMMMm")
     user = db.query(User).filter(User.id == token_data["user_id"]).first()
     if not user:
         raise HTTPException(

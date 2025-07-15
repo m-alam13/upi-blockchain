@@ -9,12 +9,13 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from app.core.db import Base, engine
 from app.routes import auth_route, wallet_route, bank_route, transection_route
 from fastapi.middleware.cors import CORSMiddleware
+from app.core.config import settings
 
 
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5000", 'http://localhost:8000'],
+    allow_origins=settings.ALLOWED_SERVER,#["http://localhost:5000", 'http://localhost:8000'],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

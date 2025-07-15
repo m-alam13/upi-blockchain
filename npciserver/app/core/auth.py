@@ -37,12 +37,15 @@ def create_access_token(data: dict) -> str:
 #         raise credentials_exception
 
 def verify_access_token_from_cookie(request: Request):
+    # print("KKKKK")
     token = request.cookies.get("jwt")
+    # print(token)
     if not token:
         raise HTTPException(status_code=status.HTTP_302_FOUND, detail="Not authenticated")
 
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        # print(payload)
         return payload  # Return decoded token data
     except JWTError:
         raise HTTPException(status_code=status.HTTP_302_FOUND, detail="Token invalid")

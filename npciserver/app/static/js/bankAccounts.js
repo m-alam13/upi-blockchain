@@ -1,5 +1,5 @@
-const API_BASE_URL = 'http://localhost:8000'; // Update with your backend URL
-
+// const API_BASE_URL = 'http://localhost:8000'; // Update with your backend URL
+const API_BASE_URL = `${window.location.protocol}//${window.location.host}`;
 class BankAccountManager {
     constructor() {
         this.currentUser = null;

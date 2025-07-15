@@ -13,6 +13,9 @@ from app.models.user_model import Kyc_User
 from app.middleware.jwt import verify_access_token, create_access_token
 from app.core.config import settings
 from typing import Optional
+from fastapi import UploadFile
+
+import aiofiles
 
 router = APIRouter(tags=["verification"])
 
@@ -47,6 +50,22 @@ async def verification_page(
         callback_url = verify_token.get('callback_url') if verify_token and verify_token.get('callback_url') else callback_url
         return RedirectResponse(f"{callback_url}?{urlencode(callback_params)}", status_code=303)
 
+
+
+async def save_selfie(selfie_bytes: bytes, numeric_id: str) -> Path:
+    upload_dir = Path("asset/selfies")
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    filename = f"{numeric_id}.png"
+    file_path = upload_dir / filename
+
+    # Save bytes directly to file
+    async with aiofiles.open(file_path, 'wb') as out_file:
+        await out_file.write(selfie_bytes)
+
+    return file_path
+
+
 # Process Verification (POST)
 
 @router.post("/verify")
@@ -76,15 +95,15 @@ async def process_verification(
     print("process_verification")
     verify_token = None
     try:
-        
+        print("OOOO")
         verify_token = verify_access_token(token, settings.SERVER_TO_SERVER_SECRET_KEY)
         header, encoded = selfie.split(",", 1)
         selfie_bytes = base64.b64decode(encoded)
         numeric_id = str(int(time.time() * 1000) )+ str(random.randint(000, 999))[:16]
         upload_dir = Path("asset/selfies")
         upload_dir.mkdir(parents=True, exist_ok=True)
-        filename = f"{numeric_id}.png"
-        file_path = upload_dir / filename
+        # filename = f"{numeric_id}.png"
+        # file_path = upload_dir / filename
 
         existing_user = db.query(Kyc_User).filter_by(pan=pan).first()
 
@@ -93,8 +112,10 @@ async def process_verification(
             verify_token['uupi'] =  existing_user.uupi
             # return {"status": "exists", "uupi": existing_user.uupi}
         else:
-            with open(file_path, "wb") as f:
-                f.write(selfie_bytes)
+            # with open(file_path, "wb") as f:
+            #     f.write(selfie_bytes)
+            file_path = await save_selfie(selfie_bytes, numeric_id=numeric_id)
+
 
             # Save user
             user = Kyc_User(
@@ -106,7 +127,7 @@ async def process_verification(
             )
             db.add(user)
             db.commit()
-            db.refresh(Kyc_User)
+            db.refresh(user)
             verify_token['uupi'] = numeric_id
 
         # Redirect to callback
@@ -119,12 +140,17 @@ async def process_verification(
           
         }
         print(f"{callback_url}?{urlencode(callback_params)}")
-        return RedirectResponse(f"{callback_url}?{urlencode(callback_params)}", status_code=303)
+        response =  RedirectResponse(f"{callback_url}?{urlencode(callback_params)}", status_code=303)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        return response
     except Exception as e:
+        print("error:",e)
         callback_params = {
         
         "status": "error",
     
         }
         callback_url = verify_token.get('callback_url') if verify_token and verify_token.get('callback_url') else callback_url
-        return RedirectResponse(f"{callback_url}?{urlencode(callback_params)}", status_code=303)
+        response =  RedirectResponse(f"{callback_url}?{urlencode(callback_params)}", status_code=303)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        return response

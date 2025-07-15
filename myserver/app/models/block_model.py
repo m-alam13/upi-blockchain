@@ -7,8 +7,9 @@ class Block(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     index = Column(Integer, nullable=False)
-    timestamp = Column(Float, default=lambda: time.time())  # ✅ Fix: Use lambda to call at insert time
+    timestamp = Column(Float, default=lambda: time.time())  #  Fix: Use lambda to call at insert time
     data = Column(String(1000))  # Ensure length
     previous_hash = Column(String(128), nullable=False)
     nonce = Column(Integer, nullable=False)
     hash = Column(String(128), nullable=False)
+    signature = Column(String(1000))

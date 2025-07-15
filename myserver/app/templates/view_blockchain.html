@@ -1,102 +1,120 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Blockchain Viewer</title>
     <link rel="stylesheet" href="/static/styles.css">
     <style>
-        /* .block-card {
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            padding: 16px;
-            margin: 12px;
-            cursor: pointer;
-            background-color: #f9f9f9;
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
         }
-        .block-data {
-            display: none;
-            margin-top: 10px;
-            background-color: #eef;
-            padding: 10px;
-            border-radius: 6px;
-        } */
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
         .blockchain-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-        justify-content: center;
-        align-items: flex-start; /* Don't stretch height */
-        padding: 20px;
-    }
-
-    .block-card {
-        flex: 1 1 calc(25% - 32px); /* 4 per row with gap */
-        max-width: calc(25% - 32px);
-        min-width: 250px;
-        box-sizing: border-box;
-
-        background-color: #f9f9f9;
-        border: 1px solid #ccc;
-        border-radius: 10px;
-        padding: 16px;
-        margin: 8px;
-        cursor: pointer;
-
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-    }
-
-    .block-card p {
-        word-break: break-word;
-        white-space: normal;
-    }
-
-    .block-data {
-        display: none;
-        margin-top: 10px;
-        background-color: #eef;
-        padding: 10px;
-        border-radius: 6px;
-    }
-
-    @media (max-width: 1024px) {
-        .block-card {
-            flex: 1 1 calc(33.333% - 32px);
-            max-width: calc(33.333% - 32px); /* 3 per row */
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 900px;
+            margin: 0 auto;
         }
-    }
 
-    @media (max-width: 768px) {
-        .block-card {
-            flex: 1 1 calc(50% - 32px);
-            max-width: calc(50% - 32px); /* 2 per row */
+        .block {
+            background-color: white;
+            border: 2px solid #3498db;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            cursor: pointer;
         }
-    }
 
-    @media (max-width: 480px) {
-        .block-card {
-            flex: 1 1 100%;
-            max-width: 100%; /* 1 per row */
+        .block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
         }
-    }
+
+        .block pre {
+            background-color: #f8f8f8;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 5px 10px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .status {
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .verify-all {
+            text-align: center;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
-    <h1 style="text-align:center;">🧱 Blockchain Blocks ({{ length }} total)</h1>
+    <h1>Blockchain Viewer</h1>
+
+    <div class="verify-all">
+        <button onclick="verifyAll()">🔍 Verify All Signatures</button>
+    </div>
+
     <div class="blockchain-container">
         {% for block in blocks %}
-        <div class="block-card" onclick="toggleDetails(block.index )">
-            <h2>Block #{{ block.index }}</h2>
+        <div class="block" onclick="toggleDetails({{ block.index }})">
+            <div class="block-header">
+                <h3>Block #{{ block.index }}</h3>
+                <span>{{ block.timestamp }}</span>
+            </div>
+
             <p><strong>Hash:</strong> {{ block.hash }}</p>
             <p><strong>Previous Hash:</strong> {{ block.previous_hash }}</p>
-            <p><strong>Timestamp:</strong> {{ block.timestamp | datetimeformat }}</p>
+            <p><strong>Nonce:</strong> {{ block.nonce }}</p>
 
-            <div class="block-data" id="details-{{ loop.index0 }}">
-                <h3>Transaction:</h3>
-                <p><strong>Txn ID:</strong> {{ block.data["transaction_id"] }}</p>
-                <p><strong>Payer:</strong> {{ block.data["payer_uupi"] }} ({{ block.data["payer_vpa"] }})</p>
-                <p><strong>Payee:</strong> {{ block.data["payee_uupi"] }} ({{ block.data["payee_vpa"] }})</p>
-                <p><strong>Amount:</strong> ₹{{ block.data["amount"] }}</p>
-                <p><strong>IFSC (Payer/Payee):</strong> {{ block.data["payer_ifsc"] }} / {{ block.data["payee_ifsc"] }}</p>
+            <p id="txn-{{ block.index }}" data-txnid="{{ block.data.get('transaction_id', '') }}">
+                <strong>Txn ID:</strong> {{ block.data.get("transaction_id", "N/A") }}
+            </p>
+
+            <p><strong>Signature:</strong> {{ block.signature[:60] }}...</p>
+
+            <div class="actions">
+                <button onclick="event.stopPropagation(); verifyBlock({{ block.index }})">Verify Signature</button>
+            </div>
+
+            <div id="verify-{{ block.index }}" class="status">⏳ Not verified</div>
+
+            <div id="details-{{ block.index }}" class="hidden">
+                <h4>Transaction Data:</h4>
+                <pre>{{ block.data | tojson(indent=2) }}</pre>
             </div>
         </div>
         {% endfor %}
@@ -105,11 +123,40 @@
     <script>
         function toggleDetails(index) {
             const blockData = document.getElementById("details-" + index);
-            if (blockData.style.display === "none" || blockData.style.display === "") {
-                blockData.style.display = "block";
-            } else {
-                blockData.style.display = "none";
+            blockData.classList.toggle("hidden");
+        }
+
+        async function verifyBlock(index) {
+            const txnIdElement = document.getElementById(`txn-${index}`);
+            const txnId = txnIdElement?.dataset?.txnid;
+            const statusElement = document.getElementById(`verify-${index}`);
+            statusElement.innerHTML = "🔍 Verifying...";
+
+            if (!txnId) {
+                statusElement.innerHTML = "❌ No transaction ID";
+                return;
             }
+
+            try {
+                const response = await fetch(`/verify-block?transaction_id=${txnId}`);
+                const result = await response.json();
+
+                statusElement.innerHTML = result.valid_signature
+                    ? " Signature Valid"
+                    : "❌ Invalid Signature";
+
+            } catch (err) {
+                statusElement.innerHTML = "⚠️ Verification Error";
+                console.error(err);
+            }
+        }
+
+        function verifyAll() {
+            const blocks = document.querySelectorAll('[id^="txn-"]');
+            blocks.forEach(el => {
+                const index = el.id.split('-')[1];
+                verifyBlock(index);
+            });
         }
     </script>
 </body>

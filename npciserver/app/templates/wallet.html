@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>FinancePal - Your Wallet</title>
+  <title>LedgePay - Your Wallet</title>
   <script>let isRead = false</script>
   <style>
     /* — your existing CSS — */
@@ -356,7 +356,7 @@
 <body>
   <div class="container">
     <div class="nav-bar">
-      <div class="logo">FinancePal</div>
+      <div class="logo">LedgePay</div>
       <div class="nav-actions">
         <a href="/transaction">New Transaction</a>
         <a href="#" id="logoutBtn">Logout</a>
@@ -430,27 +430,27 @@
 
                 <div class="form-group">
                     <label for="accountName">Account Holder Name</label>
-                    <input type="text" id="accountName" class="form-control" required />
+                    <input type="text" id="accountName" placeholder="Min length 2" class="form-control" required />
                 </div>
 
                 <div class="form-group">
                     <label for="accountNumber">Account Number</label>
-                    <input type="text" id="accountNumber" class="form-control" required />
+                    <input type="text" id="accountNumber" placeholder="Min length 10" class="form-control" required />
                 </div>
 
                 <div class="form-group">
                     <label for="ifscCode">IFSC Code</label>
-                    <input type="text" id="ifscCode" class="form-control" required />
+                    <input type="text" id="ifscCode" placeholder="Min length 8" class="form-control" required />
                 </div>
 
                 <div class="form-group">
                     <label for="bankName">Bank Name</label>
-                    <input type="text" id="bankName" class="form-control" required />
+                    <input type="text" id="bankName" placeholder="" class="form-control" required />
                 </div>
 
                 <div class="form-group">
                     <label for="branchName">Branch Name</label>
-                    <input type="text" id="branchName" class="form-control" required />
+                    <input type="text" id="branchName" placeholder="" class="form-control" required />
                 </div>
 
                 <div class="form-group">
@@ -459,19 +459,19 @@
                     <input type="text" id="vpaSuffix" class="form-control" readonly />
                    <input type="text" id="vpa" class="form-control" hidden  required/>
                 </div>
-                <div id="vpaPreview"></div>
+                <div id="vpaPreview" placeholder=""> </div>
                 <div class="error-message" id="payeeUpiError"></div>
                 <div class="success-message" id="payeeUpiSuccess"></div>
                 <div id="upiValidationStatus"></div>
 
                 <div class="form-group">
                     <label for="balance">Balance</label>
-                    <input type="number" id="balance"  class="form-control" min="0" step="0.01" required />
+                    <input type="number" id="balance" placeholder="Min value 0" class="form-control" min="0" step="0.01" required />
                 </div>
 
                 <div class="form-group">
                     <label for="upiPin">UPI PIN</label>
-                    <input type="password" id="upiPin" class="form-control" required />
+                    <input type="password" id="upiPin"  placeholder="Min: 4 - Max:6" class="form-control" required />
                 </div>
 
                 <div class="form-check mb-3">
@@ -641,7 +641,9 @@
         headers: {'Content-Type':'application/json'}
       };
       if (body) opts.body = JSON.stringify(body);
-      const res = await fetch(API_BASE + endpoint, opts);
+      console.log(opts.body,opts.headers);
+      
+      const res = await fetch(endpoint, opts);
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.detail||res.statusText);
@@ -722,7 +724,7 @@
         return `
           <div class="transaction-item">
             <div>
-              <strong>Bank Name:${a.bank_name}</strong> (${a.ifsc_code})<br/>
+              <strong>Bank Name: ${a.bank_name}</strong> (${a.ifsc_code})<br/>
            
               <p>VPA: ${a.vpa}</p>
               <p>Blance: ₹${a.balance}</p>

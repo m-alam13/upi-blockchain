@@ -231,13 +231,13 @@
                  console.log(data);
                 if (response.redirected) {
                     window.location.href = response.url; 
-                    return // ✅ this causes a full browser navigation
+                    return //  this causes a full browser navigation
                 }
                 else if (response.status==201) {
                     // On successful login, redirect to the wallet page
                     localStorage.setItem('userEmail', email); // Simulate session
-                    alert('Login successful! Redirecting to wallet page...');
-                    window.location.href = '/wallet';  // Redirect to wallet page
+                    alert('Login successful! Redirecting to login page...');
+                    window.location.href = '/login';  // Redirect to wallet page
                 } else {
                     // Show error message if credentials are invalid
                     alert(data.message);

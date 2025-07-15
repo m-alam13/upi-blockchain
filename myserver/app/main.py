@@ -9,23 +9,22 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from app.core.db import Base, engine
 from pymongo import MongoClient, errors
 from app.router import kyc_route, blockchain
+# from app.router import kyc_route, blockchain, verify_block
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.models import block_model
+from app.core.config import settings
 
 
 app = FastAPI()
-
-# app.mount("/static", StaticFiles(directory="app/static"), name="static")
-
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5000", 'http://localhost:8000'],
+    allow_origins=settings.ALLOWED_SERVER,#["http://localhost:5000", 'http://localhost:8000'],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 @app.on_event("startup")
 def on_startup():
     global client
@@ -58,6 +57,7 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
 # Include routes
 app.include_router(kyc_route.router)
 app.include_router(blockchain.router)
+# app.include_router(verify_block.router)
 # app.include_router(wallet_route.router)
 # app.include_router(bank_route.router)
 # app.include_router(transection_route.router)
